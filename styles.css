@@ -1,0 +1,41 @@
+body {
+  font-family: 'Open Sans', sans-serif;
+  text-align: center;
+}
+
+.stage-1 { margin: 10px 0; }
+.stage-2 { display: none; }
+.btn { padding: 10px; }
+
+#game__board {
+  display: flex;
+  flex-wrap: wrap;
+  height: 400px;
+  margin: 0 auto;
+  width: 400px;
+}
+
+.game__piece {
+  align-items: center;
+  background-color: #eee;
+  cursor: pointer;
+  display: flex;
+  font-size: 3em;
+  line-height: normal;
+  height: 33%;
+  justify-content: center;
+  margin: 5px;
+  width: 30%;
+}
+
+.game__piece--success {
+  background-color: #78C5AB;
+  color: #fff;
+  transition: background-color 2s ease;
+  -webkit-transition: background-color 2s ease;
+}
+
+.game__message {
+  margin-top: 20px;
+  padding-top: 20px;
+}

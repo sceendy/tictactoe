@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Tic-Tac-Toe</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel='stylesheet' href='styles.css' />
+  <script src='game.js'></script>
+</head>
+<body>
+  <h1>Tic-Tac-Toe</h1>
+  <div class="stage-1">
+    <p>Select an icon: </p>
+    <button class="btn">x</button> <button class="btn">o</button>
+  </div>
+  <div class="stage-2">
+    <div id="game__board">
+    </div>
+    <div class="game__message"></div>
+  </div>
+  <script>
+    let game = new Game();
+    game.init();
+  </script>
+</body>
+</html>
