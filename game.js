@@ -93,6 +93,7 @@ class Game {
       this.tictactoe[oppX][oppY] = this.player.opponent;
       tile.textContent = this.player.opponent;
       tile.disabled = true;
+      this.moves++;
     }
   }
 
@@ -102,43 +103,44 @@ class Game {
       return winRow.map(coord => [this.tictactoe[coord[0]][coord[1]], coord]);
     });
 
-    let gameWinner = rowArrays.filter(rowArray => {
-      // rowArray = [['x'], [[0,0], [1,1], [2,2]]]
-      // letter + coordinates
-      rowArray.filter((row, i) => {
-        // just get the value to compare to the other values from the arrays
-        if (i == 0) {
-          let match = row.every((val, i, arr) => {
-            return val == arr[0]
-          });
-          if (match) { return rowArray }
-        }
-      });
+    let gameWinner = rowArrays.filter(row => {
+      let match = row.every((val, i, arr) => val[0] == arr[0][0]);
+      if (match && !!row[0][0]) { return row }
     });
-    // expected: gameWinner = [[0,0],[1,1],[2,2], ['x']]
-    // this.win(gameWinner);
+    if (gameWinner.length !== 0) {
+      this.win(gameWinner);
+    } else if (this.moves === 9) this.draw();
   }
 
-  win(...winner) {
-    let row = winner[0];
-    let player = winner[1];
+  win(winner) {
+    let player = winner[0][0][0];
     let tiles = [...document.getElementsByClassName('game__piece')];
 
-    this.tictactoe.map(i => tiles[i].classList.add('game__piece--success'));
+    winner[0].map(info => {
+      for (let value of info) {
+        if (Array.isArray(value)) {
+          let tile = document.querySelectorAll(`[coords='${value[0]}${value[1]}']`)[0];
+          tile.classList.add('game__piece--success');
+        }
+      }
+    });
+
     tiles.forEach(tile => tile.disabled = true);
-    this.feedback.textContent = player == 'x' ? 'You win!' : 'You lose!';
+    this.feedback.textContent = player == this.player.icon ? 'You win!' : 'You lose!';
   }
 
   draw() {
-    this.feedback.textContent = 'Draw! Try Again!';
-    setTimeout(() => {
-      this.reset();
-    }, 5000)
+    this.feedback.textContent = 'Draw! Try again!';
+    this.reset();
   }
 
-  reset() {
+  /*reset() {
     let tiles = [...document.getElementsByClassName('game__piece')];
-    tiles.map(tile => tile.textContent == '');
-    //clear board, start again
-  }
+    setTimeout(() => {
+      tiles.map(tile => {
+        tile.textContent = '';
+        tile.removeAttribute('disabled');
+      }, 3000);
+    });
+  }*/
 }
