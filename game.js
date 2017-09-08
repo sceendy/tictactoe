@@ -72,7 +72,7 @@ class Game {
     tile.textContent = this.player.icon;
     tile.disabled = true;
 
-    if (this.moves > 2) this.checkGame();
+    if (this.moves > 4) this.checkGame();
 
     if (!this.feedback.textContent) {
       let emptyTiles = (() => {
@@ -94,6 +94,7 @@ class Game {
       tile.textContent = this.player.opponent;
       tile.disabled = true;
       this.moves++;
+      if (this.moves > 4) this.checkGame();
     }
   }
 
@@ -120,7 +121,8 @@ class Game {
       for (let value of info) {
         if (Array.isArray(value)) {
           let tile = document.querySelectorAll(`[coords='${value[0]}${value[1]}']`)[0];
-          tile.classList.add('game__piece--success');
+          let color = player == this.player.icon ? 'success' : 'lose';
+          tile.classList.add('game__piece--' + color);
         }
       }
     });

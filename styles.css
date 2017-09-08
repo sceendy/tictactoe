@@ -30,12 +30,14 @@ body {
   width: 30%;
 }
 
-.game__piece--success {
-  background-color: #78C5AB;
+.game__piece--success, .game__piece--lose {
   color: #fff;
   transition: background-color 2s ease;
   -webkit-transition: background-color 2s ease;
 }
+
+.game__piece--success { background-color: #78C5AB; }
+.game__piece--lose { background-color: tomato; }
 
 .game__message {
   margin-top: 20px;
