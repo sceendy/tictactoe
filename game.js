@@ -1,12 +1,12 @@
 const winner = [
-  [0, 1, 2],
-  [0, 3, 6],
-  [0, 4, 8],
-  [1, 4, 7],
-  [2, 5, 8],
-  [2, 4, 6],
-  [3, 4, 5],
-  [6, 7, 8]
+  [ [0, 0], [0, 1], [0, 2] ],
+  [ [1, 0], [1, 1], [1, 2] ],
+  [ [2, 0], [2, 1], [2, 2] ],
+  [ [0, 0], [1, 0], [2, 0] ],
+  [ [0, 1], [1, 1], [2, 1] ],
+  [ [0, 2], [1, 2], [2, 2] ],
+  [ [0, 0], [1, 1], [2, 2] ],
+  [ [0, 2], [1, 1], [2, 0] ]
 ];
 
 class Player {
@@ -37,74 +37,112 @@ class Game {
     this.gameboard = document.getElementById('game__board');
     this.feedback = document.getElementsByClassName('game__message')[0];
     this.player = new Player();
-    this.tictactoe = [];
+    this.tictactoe = [[, , ,], [, , ,], [, , ,]];
+    this.moves = 0;
   }
 
   init() {
     this.player.setupOptions();
 
-    // setup gameboard
+    // setup game
     for (let i = 0; i < 9; i++) {
       let tile = document.createElement('button');
       tile.classList.add('game__piece');
-      tile.addEventListener('click', e => this.update(e.target));
+      tile.setAttribute('coords', this.assignCoords(i));
+      tile.addEventListener('click', e => {
+        const coords = e.target.getAttribute('coords');
+        this.update(coords);
+      });
       this.gameboard.appendChild(tile);
     }
   }
 
-  update(block) {
-    block.textContent = this.player.icon;
-    block.disabled = true;
-    // random computer move
-    const tiles = [...document.getElementsByClassName('game__piece')];
-    let emptyTiles = tiles.filter(tile => tile.textContent === '');
+  assignCoords(index) {
+    const coords = index.toString(3);
+    return `${(coords.length === 1) ? `0${coords}` : `${coords}`}`;
+  }
 
-    this.checkGame(tiles, emptyTiles);
+  update(tileCoords) {
+    this.moves++;
+    const x = tileCoords.charAt(0);
+    const y = tileCoords.charAt(1);
+    const tile = document.querySelectorAll(`[coords='${tileCoords}']`)[0];
 
-    // if game finished/won, computer opponent stops
-    if (emptyTiles.length !== 0 && this.tictactoe.length !== 3) {
-      let opponentMove = Math.floor(Math.random() * (emptyTiles.length - 1));
-      emptyTiles[opponentMove].textContent = this.player.opponent;
+    this.tictactoe[x][y] = this.player.icon;
+    tile.textContent = this.player.icon;
+    tile.disabled = true;
+
+    if (this.moves > 4) this.checkGame();
+
+    if (!this.feedback.textContent) {
+      let emptyTiles = (() => {
+        let empty = new Array();
+        this.tictactoe.map(row => {
+          let x = this.tictactoe.indexOf(row);
+          for (let [y, tile] of row.entries()) {
+            if (!tile) empty.push([x, y])
+          }
+        });
+        return empty;
+      })();
+
+      let opponentMove = Math.floor(Math.random() * emptyTiles.length);
+      let oppX = emptyTiles[opponentMove][0];
+      let oppY = emptyTiles[opponentMove][1];
+      let tile = document.querySelectorAll(`[coords='${oppX}${oppY}']`)[0];
+      this.tictactoe[oppX][oppY] = this.player.opponent;
+      tile.textContent = this.player.opponent;
+      tile.disabled = true;
+      this.moves++;
+      if (this.moves > 4) this.checkGame();
     }
   }
 
-  checkGame(tiles, empty) {
-    if (empty.length < 5) {
-      var winnerCoords = [];
-      winner.map(coord => {
-        // coord = [0, 1, 2];
-        // tiles = [[tile element], [tile element], [tile element]]
-        winnerCoords = coord.filter(c => {
-          if (tiles[c].textContent == this.player.icon
-              && winnerCoords.length < 4){
-            tiles[c];
-          }
-        });
-      });
+  checkGame() {
+    // compare rows to winning rows
+    let rowArrays = winner.map(winRow => {
+      return winRow.map(coord => [this.tictactoe[coord[0]][coord[1]], coord]);
+    });
 
-      this.tictactoe = winnerCoords;
-
-      this.tictactoe = tiles.filter(tile => {
-        return tile.textContent === this.player.icon
-      });
-      if (this.tictactoe.length == 3) this.win();
-    } else if (empty.length == 0) this.draw();
+    let gameWinner = rowArrays.filter(row => {
+      let match = row.every((val, i, arr) => val[0] == arr[0][0]);
+      if (match && !!row[0][0]) { return row }
+    });
+    if (gameWinner.length !== 0) {
+      this.win(gameWinner);
+    } else if (this.moves === 9) this.draw();
   }
 
-  win() {
+  win(winner) {
+    let player = winner[0][0][0];
+    let tiles = [...document.getElementsByClassName('game__piece')];
 
-    this.tictactoe.map(tile => tile.classList.add('game__piece--success'));
-    [...document.getElementsByClassName('game__piece')]
-      .forEach(tile => tile.disabled = true);
-    this.feedback.textContent = 'You win!';
+    winner[0].map(info => {
+      for (let value of info) {
+        if (Array.isArray(value)) {
+          let tile = document.querySelectorAll(`[coords='${value[0]}${value[1]}']`)[0];
+          let color = player == this.player.icon ? 'success' : 'lose';
+          tile.classList.add('game__piece--' + color);
+        }
+      }
+    });
+
+    tiles.forEach(tile => tile.disabled = true);
+    this.feedback.textContent = player == this.player.icon ? 'You win!' : 'You lose!';
   }
 
   draw() {
-    this.feedback.textContent = 'Draw! Try Again!';
-
+    this.feedback.textContent = 'Draw! Try again!';
+    this.reset();
   }
 
-  reset() {
-    // clear board, take user back to icon selection
-  }
+  /*reset() {
+    let tiles = [...document.getElementsByClassName('game__piece')];
+    setTimeout(() => {
+      tiles.map(tile => {
+        tile.textContent = '';
+        tile.removeAttribute('disabled');
+      }, 3000);
+    });
+  }*/
 }
